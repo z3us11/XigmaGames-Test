@@ -11,7 +11,10 @@ public class BallShooting : MonoBehaviour
 
     [SerializeField] float power = 50f;
 
+    public bool canShoot = true;
+
     bool startedShooting = false;
+    LaunchArcRenderer _arc;
 
     private void Awake()
     {
@@ -20,18 +23,41 @@ public class BallShooting : MonoBehaviour
 
     private void Update()
     {
+        if(canShoot)
+            Shooting();
+    }
+
+    void Shooting()
+    {
         if (Input.GetMouseButtonDown(0))
         {
             mouseStartPos = Input.mousePosition;
+            startedShooting = true;
         }
-        if(Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButton(0))
         {
-            startedShooting = false;
             mouseEndPos = Input.mousePosition;
             dir = mouseStartPos - mouseEndPos;
             force = dir * power * Time.deltaTime;
-            _rb.AddForce(force);
         }
+        if (Input.GetMouseButtonUp(0))
+        {
+            startedShooting = false;
+            _rb.velocity = force * Time.deltaTime;
+            Debug.Log(_rb.velocity.magnitude);
+            if (_rb.velocity.magnitude > 15f)
+            {
+                canShoot = false;
+                Invoke(nameof(ResetPos), 3f);
+            }
+        }
+    }
+
+    public void ResetPos()
+    {
+        canShoot = true;
+        _rb.velocity = Vector2.zero;
+        transform.position = new Vector3(Random.Range(-8, -3), -3.5f, 0);
     }
 
 }
